@@ -443,7 +443,7 @@ Resources:
         yum install httpd -y
         systemctl start httpd
         systemctl enable httpd
-        echo 'Apache/httpd server 01 in AZ-a configured successfully' > /var/www/html
+        echo 'Apache/httpd server 01 in AZ-a configured successfully' > /var/www/html/index.html
   HttpdServer02:
     Type: AWS::EC2::Instance
     Properties:
@@ -464,7 +464,7 @@ Resources:
         yum install httpd -y
         systemctl start httpd
         systemctl enable httpd
-        echo 'Apache/httpd server 02  in AZ-b configured successfully' > /var/www/html
+        echo 'Apache/httpd server 02  in AZ-b configured successfully' > /var/www/html/index.html
 Outputs:
   NATinstanceID:
     Description: The EC2NatGatway ID
