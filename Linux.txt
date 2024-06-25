@@ -13,5 +13,3 @@ example ..  ubuntu@elc02:~$ ifconfig
                     TX packets 125960  bytes 9458817 (9.4 MB)
                     TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
 ----------------------------------------------------------------------------------
-
-- 
