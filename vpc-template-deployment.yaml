@@ -2,4 +2,17 @@ template-file-path: ./vpc-template.yaml
 tags:
   Name: 'githubSync'
   Project: 'Test'
-  
+parameters:
+  CidrRange: 10.100.0.0/16
+  PublicSbnt00Cidr: 10.100.0.0/20
+  PublicSbnt01Cidr: 10.100.16.0/20
+  PublicSbnt02Cidr: 10.100.32.0/20
+  PrivateSbnt00Cidr: 10.100.48.0/20
+  PrivateSbnt01Cidr: 10.100.64.0/20
+  PrivateSbnt02Cidr: 10.100.80.0/20
+  InterfaceSbnt00Cidr: 10.100.96.0/20
+  InterfaceSbnt01Cidr: 10.100.112.0/20
+  InterfaceSbnt02Cidr: 10.100.128.0/20
+  DBSbnt00Cidr: 10.100.144.0/20
+  DBSbnt01Cidr: 10.100.160.0/20
+  DBSbnt02Cidr: 10.100.176.0/20
