@@ -398,16 +398,6 @@ Resources:
         Tags:
         - Key: Name
           Value: !Sub InstanceConnect-${AWS::StackName}-${AWS::Region}a
-  EC2ConnctInterface1:
-    Type: AWS::EC2::InstanceConnectEndpoint
-    Properties:
-        SubnetId: !Ref InterfaceSbnt1
-        SecurityGroupIds:
-             - !Ref InterfaceSecurityGroup
-        Tags:
-        - Key: Name
-          Value: !Sub InstanceConnect-${AWS::StackName}-${AWS::Region}b
-
   EC2NatGatway:
     Type: AWS::EC2::Instance
     Properties:
