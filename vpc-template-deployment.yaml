@@ -2,3 +2,4 @@ template-file-path: ./vpc-template.yaml
 tags:
   Name: 'githubSync'
   Project: 'Test'
+  
