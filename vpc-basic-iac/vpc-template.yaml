@@ -1,4 +1,5 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
+
 Description: VPC CloudFormation Template
 
 Parameters:
@@ -54,6 +55,9 @@ Parameters:
     Type: String
     Default: 10.10.176.0/20
     AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  EC2NatGatwayAMI:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64
 
 Resources:
   VPC01:
@@ -156,7 +160,7 @@ Resources:
       CidrBlock: !Ref InterfaceSbnt01Cidr
       MapPublicIpOnLaunch: false
       AvailabilityZone: !Select
-        - 1
+        - 0
         - !GetAZs ''
       Tags:
         - Key: Name
@@ -168,7 +172,7 @@ Resources:
       CidrBlock: !Ref InterfaceSbnt02Cidr
       MapPublicIpOnLaunch: false
       AvailabilityZone: !Select
-        - 2
+        - 0
         - !GetAZs ''
       Tags:
         - Key: Name
@@ -256,6 +260,13 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub rtbl-Private-${AWS::Region}
+  NATGatwayRoute:
+    Type: AWS::EC2::Route
+    DependsOn: EC2NatGatway
+    Properties:
+      RouteTableId: !Ref PrivateRoutTable
+      InstanceId: !Ref EC2NatGatway
+      DestinationCidrBlock: 0.0.0.0/0
   AssignPrivateRoutTable0:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -346,6 +357,10 @@ Resources:
         - IpProtocol: '-1'
           SourceSecurityGroupId: !Ref DBSecurityGroup
         - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
           CidrIp: 0.0.0.0/0
@@ -383,7 +398,46 @@ Resources:
         Tags:
         - Key: Name
           Value: !Sub InstanceConnect-${AWS::StackName}-${AWS::Region}a
+  EC2ConnctInterface1:
+    Type: AWS::EC2::InstanceConnectEndpoint
+    Properties:
+        SubnetId: !Ref InterfaceSbnt1
+        SecurityGroupIds:
+             - !Ref InterfaceSecurityGroup
+        Tags:
+        - Key: Name
+          Value: !Sub InstanceConnect-${AWS::StackName}-${AWS::Region}b
+
+  EC2NatGatway:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      SubnetId: !Ref PublicSbnt0
+      ImageId: !Ref EC2NatGatwayAMI
+      SecurityGroupIds:
+        - !Ref PubSecurityGroup
+      KeyName: N.Virginia
+      SourceDestCheck: false
+      Tags:
+        - Key: Name
+          Value: NatGateWayInstance
+      UserData: !Base64 |
+        #!/bin/bash
+        sudo su
+        yum install iptables-services -y
+        systemctl enable iptables
+        systemctl start iptables
+        echo net.ipv4.ip_forward=1 >> /etc/sysctl.d/custom-ip-forwarding.conf
+        sysctl -p /etc/sysctl.d/custom-ip-forwarding.conf
+        /sbin/iptables -t nat -A POSTROUTING -o enX0 -j MASQUERADE
+        /sbin/iptables -F FORWARD
+        service iptables save
+        shutdown now
+
 Outputs:
+  NATinstanceID:
+    Description: The EC2NatGatway ID
+    Value: !Ref EC2NatGatway
   VPCID:
     Description:  VPC ID
     Value: !Ref VPC01
