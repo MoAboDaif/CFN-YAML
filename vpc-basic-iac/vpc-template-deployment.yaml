@@ -16,4 +16,4 @@ parameters:
   DBSbnt00Cidr: 10.100.144.0/20
   DBSbnt01Cidr: 10.100.160.0/20
   DBSbnt02Cidr: 10.100.176.0/20
-  EC2NatGatwayAMI: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64
+  AL2023AMI: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64
