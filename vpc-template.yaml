@@ -150,8 +150,6 @@ Resources:
           SourceSecurityGroupId: !Ref WebSecurityGroup
 
 Outputs:
-  EEC2NatGatwayID:
-
   MyVPCID:
     Description: My VPC ID
     Value: !Ref MyVPC01
