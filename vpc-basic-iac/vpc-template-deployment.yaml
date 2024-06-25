@@ -1,4 +1,4 @@
-template-file-path: ./vpc-template.yaml
+template-file-path: ./vpc-basic-iac/vpc-template.yaml
 tags:
   Name: 'githubSync'
   Project: 'Test'
