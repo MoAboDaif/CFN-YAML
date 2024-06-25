@@ -156,7 +156,7 @@ Resources:
       CidrBlock: !Ref InterfaceSbnt01Cidr
       MapPublicIpOnLaunch: false
       AvailabilityZone: !Select
-        - 0
+        - 1
         - !GetAZs ''
       Tags:
         - Key: Name
@@ -168,7 +168,7 @@ Resources:
       CidrBlock: !Ref InterfaceSbnt02Cidr
       MapPublicIpOnLaunch: false
       AvailabilityZone: !Select
-        - 0
+        - 2
         - !GetAZs ''
       Tags:
         - Key: Name
