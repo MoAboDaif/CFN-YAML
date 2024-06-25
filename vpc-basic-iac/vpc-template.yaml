@@ -55,7 +55,7 @@ Parameters:
     Type: String
     Default: 10.10.176.0/20
     AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
-  EC2NatGatwayAMI:
+  AL2023AMI:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64
 
@@ -403,7 +403,7 @@ Resources:
     Properties:
       InstanceType: t2.micro
       SubnetId: !Ref PublicSbnt0
-      ImageId: !Ref EC2NatGatwayAMI
+      ImageId: !Ref AL2023AMI
       SecurityGroupIds:
         - !Ref PubSecurityGroup
       KeyName: N.Virginia
@@ -423,7 +423,48 @@ Resources:
         /sbin/iptables -F FORWARD
         service iptables save
         shutdown now
-
+  HttpdServer01:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      SubnetId: !Ref PrivateSbnt0
+      ImageId: !Ref AL2023AMI
+      SecurityGroupIds:
+        - !Ref PrvtSecurityGroup
+      KeyName: N.Virginia
+      Tags:
+        - Key: Name
+          Value: httpd Server 01 In Private Subnet
+      UserData: !Base64 |
+        #!/bin/bash
+        sudo su
+        yum update -y
+        yum upgrade -y
+        yum install httpd -y
+        systemctl start httpd
+        systemctl enable httpd
+        echo 'Apache/httpd server 01 in AZ-a configured successfully' > /var/www/html
+  HttpdServer02:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      SubnetId: !Ref PrivateSbnt1
+      ImageId: !Ref AL2023AMI
+      SecurityGroupIds:
+        - !Ref PrvtSecurityGroup
+      KeyName: N.Virginia
+      Tags:
+        - Key: Name
+          Value: httpd Server 02 In Private Subnet in AZ-b
+      UserData: !Base64 |
+        #!/bin/bash
+        sudo su
+        yum update -y
+        yum upgrade -y
+        yum install httpd -y
+        systemctl start httpd
+        systemctl enable httpd
+        echo 'Apache/httpd server 02  in AZ-b configured successfully' > /var/www/html
 Outputs:
   NATinstanceID:
     Description: The EC2NatGatway ID
