@@ -1,0 +1,17 @@
+Network Configurations:-
+------------------------
+
+- ifconfig command
+----------------------------------------------------------------------------------
+example ..  ubuntu@elc02:~$ ifconfig
+            eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+                    inet 172.29.56.46  netmask 255.255.240.0  broadcast 172.29.63.255
+                    inet6 fe80::215:5dff:fe8d:8c0c  prefixlen 64  scopeid 0x20<link>
+                    ether 00:15:5d:8d:8c:0c  txqueuelen 1000  (Ethernet)
+                    RX packets 214998  bytes 258471981 (258.4 MB)
+                    RX errors 0  dropped 0  overruns 0  frame 0
+                    TX packets 125960  bytes 9458817 (9.4 MB)
+                    TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+----------------------------------------------------------------------------------
+
+- 

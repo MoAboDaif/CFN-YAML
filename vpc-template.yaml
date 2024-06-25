@@ -1,0 +1,222 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: VPC CloudFormation Template
+
+Parameters:
+  InstanceAMIID:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64
+  CidrRange:
+    Type: String
+    Default: 10.10.0.0/16
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  PublicSbnt00Cidr:
+    Type: String
+    Default: 10.10.0.0/20
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  PublicSbnt01Cidr:
+    Type: String
+    Default: 10.10.16.0/20
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  PublicSbnt02Cidr:
+    Type: String
+    Default: 10.10.32.0/20
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  PrivateSbnt00Cidr:
+    Type: String
+    Default: 10.10.48.0/20
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  PrivateSbnt01Cidr:
+    Type: String
+    Default: 10.10.64.0/20
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+
+Resources:
+  MyVPC01:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref CidrRange
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-${AWS::Region}-vpc
+  MyPublicSbnt0:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC01
+      CidrBlock: !Ref PublicSbnt00Cidr
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub PublicSbnt0-${AWS::Region}a
+  MyPublicSbnt1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC01
+      CidrBlock: !Ref PublicSbnt01Cidr
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub PublicSbnt1-${AWS::Region}b
+  MyPublicSbnt2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC01
+      CidrBlock: !Ref PublicSbnt02Cidr
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Select
+        - 2
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub PublicSbnt1-${AWS::Region}c
+  MyPrivateSbnt0:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC01
+      CidrBlock: !Ref PrivateSbnt00Cidr
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub PrivateSbnt0-${AWS::Region}a
+  MyPrivateSbnt1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC01
+      CidrBlock: !Ref PrivateSbnt01Cidr
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub PrivateSbnt1-${AWS::Region}b
+  MyIGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub igw-${AWS::Region}
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref MyVPC01
+      InternetGatewayId: !Ref MyIGW
+  PublicRoutTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref MyVPC01
+      Tags:
+        - Key: Name
+          Value: !Sub rtbl-public-${AWS::Region}
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref PublicRoutTable
+      GatewayId: !Ref MyIGW
+      DestinationCidrBlock: 0.0.0.0/0
+  AssignPublicRoutTable0:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRoutTable
+      SubnetId: !Ref MyPublicSbnt0
+  AssignPublicRoutTable1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRoutTable
+      SubnetId: !Ref MyPublicSbnt1
+  AssignPublicRoutTable2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRoutTable
+      SubnetId: !Ref MyPublicSbnt2
+  PrivateRoutTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref MyVPC01
+      Tags:
+        - Key: Name
+          Value: !Sub rtbl-Private-${AWS::Region}
+  NATGatwayRoute:
+    Type: AWS::EC2::Route
+    DependsOn: EC2NatGatway
+    Properties:
+      RouteTableId: !Ref PrivateRoutTable
+      InstanceId: !Ref EC2NatGatway
+      DestinationCidrBlock: 0.0.0.0/0
+  AssignPrivateRoutTable0:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRoutTable
+      SubnetId: !Ref MyPrivateSbnt0
+  AssignPrivateRoutTable1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRoutTable
+      SubnetId: !Ref MyPrivateSbnt1
+  WebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: http and https
+      VpcId: !Ref MyVPC01
+      SecurityGroupIngress:
+        - IpProtocol: '-1'
+          CidrIp: 0.0.0.0/0
+  AppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn:
+         - WebSecurityGroup
+    Properties:
+      GroupDescription: Instance GateWay Access
+      VpcId: !Ref MyVPC01
+      SecurityGroupIngress:
+        - IpProtocol: '-1'
+          SourceSecurityGroupId: !Ref WebSecurityGroup
+
+  EC2NatGatway:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      SubnetId: !Ref MyPublicSbnt0
+      ImageId: !Ref InstanceAMIID
+      SecurityGroupIds:
+        - !Ref WebSecurityGroup
+      KeyName: N.Virginia
+      SourceDestCheck: false
+      Tags:
+        - Key: Name
+          Value: NatGateWayInstance
+      UserData: !Base64 |
+        #!/bin/bash
+        sudo su
+        yum install iptables-services -y
+        systemctl enable iptables
+        systemctl start iptables
+        echo net.ipv4.ip_forward=1 >> /etc/sysctl.d/custom-ip-forwarding.conf
+        sysctl -p /etc/sysctl.d/custom-ip-forwarding.conf
+        /sbin/iptables -t nat -A POSTROUTING -o enX0 -j MASQUERADE
+        /sbin/iptables -F FORWARD
+        service iptables save
+        
+
+Outputs:
+  EEC2NatGatwayID:
+    Description: The EC2NatGatway ID
+    Value: !Ref EC2NatGatway
+  EC2PublicIP:
+    Description: The EC2NatGatway Public IP Address
+    Value: !GetAtt EC2NatGatway.PublicIp
+  MyVPCID:
+    Description: My VPC ID
+    Value: !Ref MyVPC01

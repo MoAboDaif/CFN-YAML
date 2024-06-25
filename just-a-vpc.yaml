@@ -1,0 +1,400 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: VPC CloudFormation Template
+
+Parameters:
+  CidrRange:
+    Type: String
+    Default: 10.10.0.0/16
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  PublicSbnt00Cidr:
+    Type: String
+    Default: 10.10.0.0/20
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  PublicSbnt01Cidr:
+    Type: String
+    Default: 10.10.16.0/20
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  PublicSbnt02Cidr:
+    Type: String
+    Default: 10.10.32.0/20
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  PrivateSbnt00Cidr:
+    Type: String
+    Default: 10.10.48.0/20
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  PrivateSbnt01Cidr:
+    Type: String
+    Default: 10.10.64.0/20
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  PrivateSbnt02Cidr:
+    Type: String
+    Default: 10.10.80.0/20
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  InterfaceSbnt00Cidr:
+    Type: String
+    Default: 10.10.96.0/20
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  InterfaceSbnt01Cidr:
+    Type: String
+    Default: 10.10.112.0/20
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  InterfaceSbnt02Cidr:
+    Type: String
+    Default: 10.10.128.0/20
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  DBSbnt00Cidr:
+    Type: String
+    Default: 10.10.144.0/20
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  DBSbnt01Cidr:
+    Type: String
+    Default: 10.10.160.0/20
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+  DBSbnt02Cidr:
+    Type: String
+    Default: 10.10.176.0/20
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+
+Resources:
+  VPC01:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref CidrRange
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-${AWS::Region}-vpc
+  PublicSbnt0:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC01
+      CidrBlock: !Ref PublicSbnt00Cidr
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub PublicSbnt0-${AWS::Region}a
+  PublicSbnt1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC01
+      CidrBlock: !Ref PublicSbnt01Cidr
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub PublicSbnt1-${AWS::Region}b
+  PublicSbnt2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC01
+      CidrBlock: !Ref PublicSbnt02Cidr
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Select
+        - 2
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub PublicSbnt1-${AWS::Region}c
+  PrivateSbnt0:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC01
+      CidrBlock: !Ref PrivateSbnt00Cidr
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub PrivateSbnt0-${AWS::Region}a
+  PrivateSbnt1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC01
+      CidrBlock: !Ref PrivateSbnt01Cidr
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub PrivateSbnt1-${AWS::Region}b
+  PrivateSbnt2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC01
+      CidrBlock: !Ref PrivateSbnt02Cidr
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select
+        - 2
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub PrivateSbnt1-${AWS::Region}c
+  InterfaceSbnt0:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC01
+      CidrBlock: !Ref InterfaceSbnt00Cidr
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub InterfaceSbnt0-${AWS::Region}a
+  InterfaceSbnt1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC01
+      CidrBlock: !Ref InterfaceSbnt01Cidr
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub InterfaceSbnt1-${AWS::Region}b
+  InterfaceSbnt2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC01
+      CidrBlock: !Ref InterfaceSbnt02Cidr
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub InterfaceSbnt2-${AWS::Region}c
+  DBSbnt0:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC01
+      CidrBlock: !Ref DBSbnt00Cidr
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub DBSbnt0-${AWS::Region}a
+  DBSbnt1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC01
+      CidrBlock: !Ref DBSbnt01Cidr
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub DBSbnt1-${AWS::Region}b
+  DBSbnt2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC01
+      CidrBlock: !Ref DBSbnt02Cidr
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select
+        - 2
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub DBSbnt2-${AWS::Region}c
+  IGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub igw-${AWS::Region}
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC01
+      InternetGatewayId: !Ref IGW
+  PublicRoutTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC01
+      Tags:
+        - Key: Name
+          Value: !Sub rtbl-public-${AWS::Region}
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref PublicRoutTable
+      GatewayId: !Ref IGW
+      DestinationCidrBlock: 0.0.0.0/0
+  AssignPublicRoutTable0:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRoutTable
+      SubnetId: !Ref PublicSbnt0
+  AssignPublicRoutTable1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRoutTable
+      SubnetId: !Ref PublicSbnt1
+  AssignPublicRoutTable2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRoutTable
+      SubnetId: !Ref PublicSbnt2
+  PrivateRoutTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC01
+      Tags:
+        - Key: Name
+          Value: !Sub rtbl-Private-${AWS::Region}
+  AssignPrivateRoutTable0:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRoutTable
+      SubnetId: !Ref PrivateSbnt0
+  AssignPrivateRoutTable1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRoutTable
+      SubnetId: !Ref PrivateSbnt1
+  AssignPrivateRoutTable2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRoutTable
+      SubnetId: !Ref PrivateSbnt2
+  AssignInterfaceRoutTable0:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRoutTable
+      SubnetId: !Ref InterfaceSbnt0
+  AssignInterfaceRoutTable1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRoutTable
+      SubnetId: !Ref InterfaceSbnt1
+  AssignInterfaceRoutTable2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRoutTable
+      SubnetId: !Ref InterfaceSbnt2
+  AssignDBRoutTable0:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRoutTable
+      SubnetId: !Ref DBSbnt0
+  AssignDBRoutTable1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRoutTable
+      SubnetId: !Ref DBSbnt1
+  AssignDBRoutTable2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRoutTable
+      SubnetId: !Ref DBSbnt2
+  PrvtSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Wep/App Instances
+      VpcId: !Ref VPC01
+      Tags:
+        - Key: Name
+          Value: !Sub PrvtSG-${AWS::StackName}-${AWS::Region}
+  InterfaceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: VPC EndPoints & Interfaces SecutityGroups
+      VpcId: !Ref VPC01
+      Tags:
+        - Key: Name
+          Value: !Sub InterfaceSG-${AWS::StackName}-${AWS::Region}
+      SecurityGroupIngress:
+        - IpProtocol: '-1'
+          SourceSecurityGroupId: !Ref PrvtSecurityGroup
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Database SecurityGroup 
+      VpcId: !Ref VPC01
+      Tags:
+        - Key: Name
+          Value: !Sub DBSG-${AWS::StackName}-${AWS::Region}
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref PrvtSecurityGroup
+  PubSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http, https & ssh
+      VpcId: !Ref VPC01
+      SecurityGroupIngress:
+        - IpProtocol: '-1'
+          SourceSecurityGroupId: !Ref InterfaceSecurityGroup
+        - IpProtocol: '-1'
+          SourceSecurityGroupId: !Ref PrvtSecurityGroup
+        - IpProtocol: '-1'
+          SourceSecurityGroupId: !Ref DBSecurityGroup
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub PubSG-${AWS::StackName}-${AWS::Region}
+  PrvtSGIngress01:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow ssh from Public SecurityGroup
+      GroupId:  !Ref  PrvtSecurityGroup
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+      SourceSecurityGroupId: !Ref PubSecurityGroup
+  PrvtSGIngress02:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow ssh from Public InterfaceSecurityGroup
+      GroupId:  !Ref  PrvtSecurityGroup
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+      SourceSecurityGroupId: !Ref InterfaceSecurityGroup
+  EC2ConnctInterface0:
+    Type: AWS::EC2::InstanceConnectEndpoint
+    Properties:
+        SubnetId: !Ref InterfaceSbnt0
+        SecurityGroupIds:
+             - !Ref InterfaceSecurityGroup
+        Tags:
+        - Key: Name
+          Value: !Sub InstanceConnect-${AWS::StackName}-${AWS::Region}a
+  EC2ConnctInterface1:
+    Type: AWS::EC2::InstanceConnectEndpoint
+    Properties:
+        SubnetId: !Ref InterfaceSbnt1
+        SecurityGroupIds:
+             - !Ref InterfaceSecurityGroup
+        Tags:
+        - Key: Name
+          Value: !Sub InstanceConnect-${AWS::StackName}-${AWS::Region}b
+
+Outputs:
+  VPCID:
+    Description:  VPC ID
+    Value: !Ref VPC01
