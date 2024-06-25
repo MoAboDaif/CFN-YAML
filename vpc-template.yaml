@@ -1,0 +1,143 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "VPC CloudFormation Template"
+Resources:
+    MyVPC01:
+      Type: AWS::EC2::VPC
+      Properties:
+          CidrBlock: "192.168.0.0/16"
+          EnableDnsSupport: true
+          EnableDnsHostnames: true
+          Tags:
+                - Key: "Name"
+                  Value: !Sub  "cnf-vpc-${AWS::Region}"
+    MyPublicSbnt0:
+      Type: AWS::EC2::Subnet
+      Properties:
+          VpcId: !Ref MyVPC01
+          CidrBlock: "192.168.0.0/24"
+          MapPublicIpOnLaunch: true
+          AvailabilityZone: !Select
+            - 0
+            - !GetAZs ""
+          Tags:
+             - Key: "Name"
+               Value: !Sub "PublicSbnt0-${AWS::Region}a"            
+    MyPublicSbnt1:
+      Type: AWS::EC2::Subnet
+      Properties:
+          VpcId: !Ref MyVPC01
+          CidrBlock: "192.168.1.0/24"
+          MapPublicIpOnLaunch: true
+          AvailabilityZone: !Select
+            - 1
+            - !GetAZs ""
+          Tags:
+             - Key: "Name"
+               Value: !Sub "PublicSbnt1-${AWS::Region}b"
+    MyPrivateSbnt0:
+      Type: AWS::EC2::Subnet
+      Properties:
+          VpcId: !Ref MyVPC01
+          CidrBlock: "192.168.16.0/20"
+          MapPublicIpOnLaunch: false
+          AvailabilityZone: !Select
+            - 0
+            - !GetAZs ""
+          Tags:
+             - Key: "Name"
+               Value: !Sub "PrivateSbnt0-${AWS::Region}a"
+    MyPrivateSbnt1:
+      Type: AWS::EC2::Subnet
+      Properties:
+          VpcId: !Ref MyVPC01
+          CidrBlock: "192.168.32.0/20"
+          MapPublicIpOnLaunch: false
+          AvailabilityZone: !Select
+            - 1
+            - !GetAZs ""
+          Tags:
+             - Key: "Name"
+               Value: !Sub "PrivateSbnt1-${AWS::Region}b"
+    MyIGW:
+      Type: AWS::EC2::InternetGateway
+      Properties:
+          Tags:
+             - Key: "Name"
+               Value: !Sub "igw-${AWS::Region}"
+    AttachGateway:
+      Type: AWS::EC2::VPCGatewayAttachment
+      Properties:
+           VpcId: !Ref MyVPC01
+           InternetGatewayId: !Ref MyIGW
+    PublicRoutTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+          VpcId: !Ref MyVPC01
+          Tags:
+             - Key: "Name"
+               Value: !Sub "rtbl-public-${AWS::Region}"
+    PrivateRoutTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+          VpcId: !Ref MyVPC01
+          Tags:
+             - Key: "Name"
+               Value: !Sub "rtbl-Private-${AWS::Region}"
+    PublicRoute:
+      Type: AWS::EC2::Route
+      DependsOn: AttachGateway
+      Properties:
+          GatewayId: !Ref MyIGW
+          DestinationCidrBlock: "0.0.0.0/0"
+          RouteTableId: !Ref PublicRoutTable
+    AssignPublicRoutTable0:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+           RouteTableId: !Ref PublicRoutTable
+           SubnetId: !Ref MyPublicSbnt0
+    AssignPublicRoutTable1:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+           RouteTableId: !Ref PublicRoutTable
+           SubnetId: !Ref MyPublicSbnt1
+    AssignPrivateRoutTable0:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+           RouteTableId: !Ref PrivateRoutTable
+           SubnetId: !Ref MyPrivateSbnt0
+    AssignPrivateRoutTable1:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+           RouteTableId: !Ref PrivateRoutTable
+           SubnetId: !Ref MyPrivateSbnt1
+    WebSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: "http and https"
+        VpcId: !Ref MyVPC01
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: "80"
+            ToPort: "80"
+            CidrIp: "0.0.0.0/0"
+          - IpProtocol: tcp
+            FromPort: "443"
+            ToPort: "443"
+            CidrIp: "0.0.0.0/0"
+    EC2WebHost01:
+      Type: AWS::EC2::Instance
+      Properties:
+        InstanceType: "t2.micro"
+        SubnetId: !Ref MyPublicSbnt0
+        ImageId: "ami-0bb84b8ffd87024d8"
+        SecurityGroupIds:
+             - !Ref WebSecurityGroup
+        KeyName: "N.Virginia"
+        UserData: !Base64 |
+          #!/bin/bash
+          sudo su
+          yum update -y
+          yum install httpd -y
+          systemctl enable httpd
+          systemctl start httpd
+          echo "apache server is running" > /var/www/html/index.html
