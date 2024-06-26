@@ -334,7 +334,7 @@ Resources:
   DBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Database SecurityGroup 
+      GroupDescription: Database SecurityGroup
       VpcId: !Ref VPC01
       Tags:
         - Key: Name
@@ -375,7 +375,7 @@ Resources:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       Description: Allow ssh from Public SecurityGroup
-      GroupId:  !Ref  PrvtSecurityGroup
+      GroupId: !Ref PrvtSecurityGroup
       IpProtocol: tcp
       FromPort: 22
       ToPort: 22
@@ -384,18 +384,27 @@ Resources:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       Description: Allow ssh from Public InterfaceSecurityGroup
-      GroupId:  !Ref  PrvtSecurityGroup
+      GroupId: !Ref PrvtSecurityGroup
       IpProtocol: tcp
       FromPort: 22
       ToPort: 22
       SourceSecurityGroupId: !Ref InterfaceSecurityGroup
+  PrvtSGIngress03:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow ssh from Public SecurityGroup
+      GroupId: !Ref PrvtSecurityGroup
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      SourceSecurityGroupId: !Ref PubSecurityGroup
   EC2ConnctInterface0:
     Type: AWS::EC2::InstanceConnectEndpoint
     Properties:
-        SubnetId: !Ref InterfaceSbnt0
-        SecurityGroupIds:
-             - !Ref InterfaceSecurityGroup
-        Tags:
+      SubnetId: !Ref InterfaceSbnt0
+      SecurityGroupIds:
+        - !Ref InterfaceSecurityGroup
+      Tags:
         - Key: Name
           Value: !Sub InstanceConnect-${AWS::StackName}-${AWS::Region}a
   EC2NatGatway:
@@ -470,5 +479,5 @@ Outputs:
     Description: The EC2NatGatway ID
     Value: !Ref EC2NatGatway
   VPCID:
-    Description:  VPC ID
+    Description: VPC ID
     Value: !Ref VPC01
