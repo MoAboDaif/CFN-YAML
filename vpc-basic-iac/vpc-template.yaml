@@ -262,7 +262,6 @@ Resources:
           Value: !Sub rtbl-Private-${AWS::Region}
   NATGatwayRoute:
     Type: AWS::EC2::Route
-    DependsOn: EC2NatGatway
     Properties:
       RouteTableId: !Ref PrivateRoutTable
       InstanceId: !Ref EC2NatGatway
