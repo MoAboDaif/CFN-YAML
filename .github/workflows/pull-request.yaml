@@ -8,9 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-#      - name: linter  install
-#        uses: scottbrenner/cfn-lint-action@v2
-#        with:
-#          command:  cfn-lint -t ./vpc-template.yaml
+        uses: actions/checkout@v4
+      - name: Setup Cloud Formation Linter with Latest Version
+        uses: scottbrenner/cfn-lint-action@v2
+        with:
+          command:  cfn-lint -t ./vpc-basic-iac/vpc-template.yaml
           
